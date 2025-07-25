@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 # API_KEY = os.getenv("GEMINI_API_KEY")
-API_KEY = "AIzaSyDV4OFIg-pwBUQCg6bUqrzQ15kXKmRk1XU"
+API_KEY = "AIzaSyBbCdHEz7D6giJGSvZvvfPP1tDG9N-GnJk"
 print(">>> API_KEY configurado para Gemini:", API_KEY)
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("models/gemini-1.5-flash")
@@ -15,7 +15,7 @@ from algorithms.network_optimization import (
 )
 
 def gemini_network_sensitivity_analysis(graph, shortest_path_result):
-    API_KEY = os.getenv("GOOGLE_API_KEY") or "AIzaSyDV4OFIg-pwBUQCg6bUqrzQ15kXKmRk1XU"
+    API_KEY = os.getenv("GOOGLE_API_KEY") or "AIzaSyBbCdHEz7D6giJGSvZvvfPP1tDG9N-GnJk"
     genai.configure(api_key=API_KEY)
     model = genai.GenerativeModel("models/gemini-1.5-flash")
     print(">>> ENTRANDO a gemini_network_sensitivity_analysis")
