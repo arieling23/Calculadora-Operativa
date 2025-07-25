@@ -12,6 +12,6 @@ class NetworkProblemRequest(BaseModel):
 def solve_network_problem(request: NetworkProblemRequest):
     print(">>> ENTRANDO AL ENDPOINT /api/solve_network")
     print(f"Payload recibido: {request.graph}")
-    result = solve_optimization_network("shortest_path", {"graph": request.graph})
+    result = solve_optimization_network("all", {"graph": request.graph})
     print(">>> Resultado de solve_optimization_network:", result)
     return result

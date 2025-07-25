@@ -103,7 +103,7 @@ export default function NetworkPage() {
     
     try {
       console.log("Enviando datos al backend:", graph);
-      const data = { problem_type: "shortest_path", graph };
+      const data = { graph };
       const result = await solveNetwork(data);
       setSolution(result);
     } catch (err) {
@@ -121,9 +121,9 @@ export default function NetworkPage() {
 
   const metodoNombres = {
     shortest_path: "Ruta Más Corta",
-    longest_path: "Ruta Más Larga",
     mst: "Árbol de Expansión Mínima",
     max_flow: "Flujo Máximo",
+    min_cost_flow: "Flujo de Costo Mínimo",
   };
 
   return (
@@ -381,45 +381,31 @@ export default function NetworkPage() {
                                 <div className="alert alert-info">
                                   <strong>Flujo Total:</strong> {solution[key].max_flow}
                                 </div>
+                              ) : key === "min_cost_flow" ? (
+                                <div className="alert alert-info">
+                                  <strong>Costo Mínimo:</strong> {solution[key].min_cost}
+                                </div>
                               ) : (
                                 <div className="alert alert-success">
                                   <strong>Peso Total:</strong> {solution[key].total_weight}
+                                  {solution[key].node_order && solution[key].node_order.length > 0 && (
+                                    <div className="mt-2 text-dark">
+                                      <strong>Camino:</strong> {solution[key].node_order.join(' → ')}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
-                            
-                            <img
-                              src={`data:image/png;base64,${solution[key].graph_image}`}
-                              alt={metodoNombres[key]}
-                              className="img-fluid rounded shadow"
-                              style={{ cursor: "pointer", maxHeight: "300px" }}
-                              onClick={() => handleImageClick(solution[key])}
-                            />
-
-                            {/* Análisis de Sensibilidad para Ruta Más Corta */}
-                            {key === "shortest_path" && solution[key].sensitivity_analysis && (
-                              <div className="mt-4">
-                                <h6 className="fw-bold text-primary mb-2">Análisis de Sensibilidad de la Ruta Más Corta</h6>
-                                <div className="table-responsive">
-                                  <table className="table table-bordered table-sm">
-                                    <thead className="table-light">
-                                      <tr>
-                                        <th>Arista</th>
-                                        <th>Impacto al eliminar</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {Object.entries(solution[key].sensitivity_analysis).map(([edge, impact]) => (
-                                        <tr key={edge}>
-                                          <td>{edge}</td>
-                                          <td>{impact === 'Sin ruta' ? <span className="text-danger">Sin ruta</span> : impact}</td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
+                            {key !== "min_cost_flow" && solution[key].graph_image && (
+                              <img
+                                src={`data:image/png;base64,${solution[key].graph_image}`}
+                                alt={metodoNombres[key]}
+                                className="img-fluid rounded shadow"
+                                style={{ cursor: "pointer", maxHeight: "300px" }}
+                                onClick={() => handleImageClick(solution[key])}
+                              />
                             )}
+                            {/* Análisis de Sensibilidad para Ruta Más Corta */}
                             {/* Iteraciones del Flujo Máximo */}
                             {key === "max_flow" && solution.max_flow.iterations && solution.max_flow.iterations.length > 0 && (
                               <div className="mt-3">
@@ -440,6 +426,34 @@ export default function NetworkPage() {
                                           <td>{step.path}</td>
                                           <td>{step.capacity}</td>
                                         </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+                            {/* Flujo de Costo Mínimo: mostrar tabla de flujo */}
+                            {key === "min_cost_flow" && solution[key].flow && Object.keys(solution[key].flow).length > 0 && (
+                              <div className="mt-4">
+                                <h6 className="fw-bold text-primary mb-2">Flujo de Costo Mínimo (por arista)</h6>
+                                <div className="table-responsive">
+                                  <table className="table table-bordered table-sm">
+                                    <thead className="table-light">
+                                      <tr>
+                                        <th>De</th>
+                                        <th>Hacia</th>
+                                        <th>Flujo</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {Object.entries(solution[key].flow).flatMap(([from, tos]) => (
+                                        Object.entries(tos).map(([to, flow]) => (
+                                          <tr key={from + '-' + to}>
+                                            <td>{from}</td>
+                                            <td>{to}</td>
+                                            <td>{flow}</td>
+                                          </tr>
+                                        ))
                                       ))}
                                     </tbody>
                                   </table>
@@ -475,26 +489,6 @@ export default function NetworkPage() {
                   {solution.shortest_path.sensitivity_analysis_gemini.split("\n").map((line, index) => (
                     <p key={index} className="text-muted mb-2">{line}</p>
                   ))}
-                </div>
-              ) : solution && solution.shortest_path && solution.shortest_path.sensitivity_analysis ? (
-                <div className="table-responsive">
-                  <h6 className="fw-bold text-primary mb-2">Análisis de Sensibilidad de la Ruta Más Corta</h6>
-                  <table className="table table-bordered table-sm">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Arista</th>
-                        <th>Impacto al eliminar</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(solution.shortest_path.sensitivity_analysis).map(([edge, impact]) => (
-                        <tr key={edge}>
-                          <td>{edge}</td>
-                          <td>{impact === 'Sin ruta' ? <span className="text-danger">Sin ruta</span> : impact}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               ) : (
                 <div
