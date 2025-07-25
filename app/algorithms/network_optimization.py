@@ -9,8 +9,16 @@ matplotlib.use('Agg')
 def generate_graph_image(graph, paths=None, title="Grafo"):
     """Genera una imagen del grafo con NetworkX y Matplotlib"""
     G = nx.DiGraph()
-    for u, v, w in graph:
-        G.add_edge(u, v, weight=w)
+    # Admite aristas de 3 o 4 valores
+    for edge in graph:
+        if len(edge) == 4:
+            u, v, weight, capacity = edge
+            G.add_edge(u, v, weight=weight)
+        elif len(edge) == 3:
+            u, v, weight = edge
+            G.add_edge(u, v, weight=weight)
+        else:
+            raise ValueError("Formato de arista no soportado")
 
     pos = nx.spring_layout(G)
     labels = {(u, v): f"{d['weight']}" for u, v, d in G.edges(data=True)}
@@ -32,11 +40,12 @@ def generate_graph_image(graph, paths=None, title="Grafo"):
     plt.close()
     return image_base64
 
+
 def dijkstra_algorithm(graph, start_node):
     """Ruta más corta con peso total y orden de nodos"""
     G = nx.DiGraph()
-    for u, v, w in graph:
-        G.add_edge(u, v, weight=w)
+    for u, v, weight, capacity in graph:
+        G.add_edge(u, v, weight=weight)
 
     path_lengths, paths = nx.single_source_dijkstra(G, start_node)
 
@@ -56,10 +65,9 @@ def dijkstra_algorithm(graph, start_node):
     }
 
 def min_cost_flow_algorithm(graph, source, sink):
-    """Flujo de costo mínimo entre source y sink usando NetworkX"""
     G = nx.DiGraph()
-    for u, v, w in graph:
-        G.add_edge(u, v, capacity=w, weight=w)  # Asume peso como costo y capacidad
+    for u, v, weight, capacity in graph:
+        G.add_edge(u, v, capacity=capacity, weight=weight)
     try:
         flow_dict = nx.max_flow_min_cost(G, source, sink, capacity="capacity", weight="weight")
         cost = nx.cost_of_flow(G, flow_dict)
@@ -74,19 +82,20 @@ def min_cost_flow_algorithm(graph, source, sink):
     }
 
 
+
 def sensitivity_analysis_shortest_path(graph, start_node, end_node):
     """
     Para cada arista, calcula el nuevo peso total de la ruta más corta si esa arista se elimina.
     """
     G = nx.DiGraph()
-    for u, v, w in graph:
-        G.add_edge(u, v, weight=w)
+    for u, v, weight, capacity in graph:
+        G.add_edge(u, v, capacity=capacity, weight=weight)
     try:
         base_length = nx.dijkstra_path_length(G, start_node, end_node)
     except nx.NetworkXNoPath:
         base_length = float('inf')
     results = {}
-    for u, v, w in graph:
+    for u, v, weight, capacity in graph:
         G_temp = G.copy()
         G_temp.remove_edge(u, v)
         try:
@@ -102,8 +111,8 @@ def sensitivity_analysis_shortest_path(graph, start_node, end_node):
 def minimum_spanning_tree(graph):
     """Árbol de Expansión Mínima con peso total"""
     G = nx.Graph()
-    for u, v, w in graph:
-        G.add_edge(u, v, weight=w)
+    for u, v, weight, capacity in graph:
+        G.add_edge(u, v, weight=weight)
 
     mst = nx.minimum_spanning_tree(G, algorithm="kruskal")
     mst_edges = [(u, v, d["weight"]) for u, v, d in mst.edges(data=True)]
@@ -124,8 +133,9 @@ def max_flow_algorithm(graph, source, sink):
     G = nx.DiGraph()
     
     # Agregar aristas con capacidad
-    for u, v, w in graph:
-        G.add_edge(u, v, capacity=w)
+    for u, v, weight, capacity in graph:
+        G.add_edge(u, v, capacity=capacity)
+
 
     # Inicializar variables
     flow_value = 0

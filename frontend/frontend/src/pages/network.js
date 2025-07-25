@@ -8,7 +8,7 @@ import { Modal } from "react-bootstrap";
 export default function NetworkPage() {
   const [graph, setGraph] = useState([]);
   const [solution, setSolution] = useState(null);
-  const [edgeData, setEdgeData] = useState({ from: "", to: "", weight: "" });
+  const [edgeData, setEdgeData] = useState({ from: "", to: "", weight: "", capacity: "" });
   const [selectedImage, setSelectedImage] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,36 +45,50 @@ export default function NetworkPage() {
   };
 
   const addEdge = () => {
-    if (!edgeData.from || !edgeData.to || !edgeData.weight) {
-      setValidationErrors({ edge: "Todos los campos son obligatorios" });
-      return;
-    }
-    
-    if (edgeData.from === edgeData.to) {
-      setValidationErrors({ edge: "El nodo origen y destino no pueden ser iguales" });
-      return;
-    }
-    
-    if (parseInt(edgeData.weight) < 0) {
-      setValidationErrors({ edge: "El peso debe ser mayor a 0" });
-      return;
-    }
-    
-    // Verificar si la arista ya existe
-    // Después: (solo detecta duplicados en la misma dirección)
-  const edgeExists = graph.some(([from, to]) => 
+  if (!edgeData.from || !edgeData.to || edgeData.weight === "" || edgeData.capacity === "") {
+    setValidationErrors({ edge: "Todos los campos son obligatorios" });
+    return;
+  }
+
+  if (edgeData.from === edgeData.to) {
+    setValidationErrors({ edge: "El nodo origen y destino no pueden ser iguales" });
+    return;
+  }
+
+  if (parseFloat(edgeData.capacity) <= 0) {
+    setValidationErrors({ edge: "La capacidad debe ser mayor a 0" });
+    return;
+  }
+
+  if (parseFloat(edgeData.weight) < 0) {
+    setValidationErrors({ edge: "El peso/costo no puede ser negativo" });
+    return;
+  }
+
+  // Verificar si la arista ya existe
+  const edgeExists = graph.some(([from, to]) =>
     (from === edgeData.from && to === edgeData.to)
   );
-      
-    if (edgeExists) {
-      setValidationErrors({ edge: "Esta arista ya existe en el grafo" });
-      return;
-    }
-    
-    setGraph((prevGraph) => [...prevGraph, [edgeData.from, edgeData.to, parseInt(edgeData.weight)]]);
-    setEdgeData({ from: "", to: "", weight: "" });
-    setValidationErrors({});
-  };
+
+  if (edgeExists) {
+    setValidationErrors({ edge: "Esta arista ya existe en el grafo" });
+    return;
+  }
+
+  setGraph(prevGraph => [
+    ...prevGraph,
+    [
+      edgeData.from,
+      edgeData.to,
+      parseFloat(edgeData.weight),
+      parseFloat(edgeData.capacity)
+    ]
+  ]);
+  setEdgeData({ from: "", to: "", weight: "", capacity: "" });
+  setValidationErrors({});
+  
+};
+
 
   const removeEdge = (index) => {
     setGraph((prevGraph) => prevGraph.filter((_, i) => i !== index));
@@ -189,6 +203,18 @@ export default function NetworkPage() {
                           min="1"
                         />
                       </div>
+                      <div className="col-md-4">
+                        <label className="form-label fw-bold">Capacidad</label>
+                        <input
+                          type="number"
+                          className={`form-control ${validationErrors.edge ? 'is-invalid' : ''}`}
+                          placeholder="Ej: 50"
+                          value={edgeData.capacity}
+                          onChange={(e) => setEdgeData({ ...edgeData, capacity: e.target.value })}
+                          min="1"
+                        />
+                      </div>
+
                     </div>
                     {validationErrors.edge && (
                       <div className="alert alert-danger mt-2">
@@ -244,24 +270,22 @@ export default function NetworkPage() {
                 📌 Aristas del Grafo
               </h4>
               <div className="row">
-                {graph.map(([u, v, w], index) => (
-                  <div key={index} className="col-md-3 mb-2">
-                    <div className="card border-primary">
-                      <div className="card-body text-center p-2">
-                        <div className="fw-bold text-primary">{u}</div>
-                        <div className="text-muted">→</div>
-                        <div className="fw-bold text-success">{v}</div>
-                        <div className="badge bg-info mt-1">Peso: {w}</div>
-                        <button 
-                          className="btn btn-danger btn-sm mt-2"
-                          onClick={() => removeEdge(index)}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                {graph.map(([u, v, weight, capacity], index) => (
+  <div key={index} className="col-md-3 mb-2">
+    <div className="card border-primary">
+      <div className="card-body text-center p-2">
+        <div className="fw-bold text-primary">{u}</div>
+        <div className="text-muted">→</div>
+        <div className="fw-bold text-success">{v}</div>
+        <div className="badge bg-info mt-1">Costo: {weight}</div>
+        <div className="badge bg-warning mt-1">Cap: {capacity}</div>
+        <button className="btn btn-danger btn-sm mt-2" onClick={() => removeEdge(index)}>🗑️</button>
+      </div>
+    </div>
+  </div>
+))}
+
+
               </div>
             </div>
           )}
