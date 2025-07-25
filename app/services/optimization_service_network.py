@@ -4,15 +4,20 @@ import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
+# API_KEY = os.getenv("GEMINI_API_KEY")
+API_KEY = "AIzaSyDV4OFIg-pwBUQCg6bUqrzQ15kXKmRk1XU"
+print(">>> API_KEY configurado para Gemini:", API_KEY)
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("models/gemini-1.5-flash")
 
 from algorithms.network_optimization import (
-    dijkstra_algorithm, minimum_spanning_tree, sensitivity_analysis_shortest_path
+    solve_all_problems, sensitivity_analysis_shortest_path
 )
 
 def gemini_network_sensitivity_analysis(graph, shortest_path_result):
+    API_KEY = os.getenv("GOOGLE_API_KEY") or "AIzaSyDV4OFIg-pwBUQCg6bUqrzQ15kXKmRk1XU"
+    genai.configure(api_key=API_KEY)
+    model = genai.GenerativeModel("models/gemini-1.5-flash")
     print(">>> ENTRANDO a gemini_network_sensitivity_analysis")
     prompt = f"""
     Dado el siguiente grafo dirigido con aristas (origen, destino, peso):
@@ -32,16 +37,11 @@ def gemini_network_sensitivity_analysis(graph, shortest_path_result):
 
 def solve_optimization_network(problem_type, data):
     print(f">>> solve_optimization_network llamado con problem_type={problem_type}")
-    if problem_type == "shortest_path":
-        graph = data["graph"]
-        start_node = graph[0][0]
-        end_node = graph[-1][1]
-        shortest = dijkstra_algorithm(graph, start_node)
-        sensitivity = sensitivity_analysis_shortest_path(graph, start_node, end_node)
-        shortest["sensitivity_analysis"] = sensitivity
-        # Gemini
-        shortest["sensitivity_analysis_gemini"] = gemini_network_sensitivity_analysis(graph, shortest)
-        return shortest
-    elif problem_type == "mst":
-        return minimum_spanning_tree(data["graph"])
-    return {"status": "error", "message": "Unknown problem type"}
+    graph = data["graph"]
+    results = solve_all_problems(graph)
+    # Agregar análisis de sensibilidad solo a shortest_path
+    start_node = graph[0][0]
+    end_node = graph[-1][1]
+    results["shortest_path"]["sensitivity_analysis"] = sensitivity_analysis_shortest_path(graph, start_node, end_node)
+    results["shortest_path"]["sensitivity_analysis_gemini"] = gemini_network_sensitivity_analysis(graph, results["shortest_path"])
+    return results
