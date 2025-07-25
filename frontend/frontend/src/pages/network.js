@@ -55,17 +55,17 @@ export default function NetworkPage() {
       return;
     }
     
-    if (parseInt(edgeData.weight) <= 0) {
+    if (parseInt(edgeData.weight) < 0) {
       setValidationErrors({ edge: "El peso debe ser mayor a 0" });
       return;
     }
     
     // Verificar si la arista ya existe
-    const edgeExists = graph.some(([from, to]) => 
-      (from === edgeData.from && to === edgeData.to) || 
-      (from === edgeData.to && to === edgeData.from)
-    );
-    
+    // Después: (solo detecta duplicados en la misma dirección)
+  const edgeExists = graph.some(([from, to]) => 
+    (from === edgeData.from && to === edgeData.to)
+  );
+      
     if (edgeExists) {
       setValidationErrors({ edge: "Esta arista ya existe en el grafo" });
       return;
