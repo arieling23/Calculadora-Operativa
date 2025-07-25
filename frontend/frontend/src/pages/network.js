@@ -396,6 +396,18 @@ export default function NetworkPage() {
                                 </div>
                               )}
                             </div>
+                            {key === "mst" && solution[key].edges && solution[key].edges.length > 0 && (
+                              <div className="mt-2 text-dark">
+                                <strong>Aristas del Árbol:</strong>
+                                <ul className="list-unstyled mb-0">
+                                  {solution[key].edges.map(([from, to, weight], idx) => (
+                                    <li key={idx}>
+                                      {from} — {to} <span className="badge bg-secondary">{weight}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                             {key !== "min_cost_flow" && solution[key].graph_image && (
                               <img
                                 src={`data:image/png;base64,${solution[key].graph_image}`}
