@@ -55,6 +55,25 @@ def dijkstra_algorithm(graph, start_node):
         "graph_image": image
     }
 
+def min_cost_flow_algorithm(graph, source, sink):
+    """Flujo de costo mínimo entre source y sink usando NetworkX"""
+    G = nx.DiGraph()
+    for u, v, w in graph:
+        G.add_edge(u, v, capacity=w, weight=w)  # Asume peso como costo y capacidad
+    try:
+        flow_dict = nx.max_flow_min_cost(G, source, sink, capacity="capacity", weight="weight")
+        cost = nx.cost_of_flow(G, flow_dict)
+    except Exception as e:
+        flow_dict = {}
+        cost = str(e)
+    return {
+        "flow": flow_dict,
+        "min_cost": cost,
+        "start_node": source,
+        "end_node": sink
+    }
+
+
 def sensitivity_analysis_shortest_path(graph, start_node, end_node):
     """
     Para cada arista, calcula el nuevo peso total de la ruta más corta si esa arista se elimina.
@@ -78,36 +97,7 @@ def sensitivity_analysis_shortest_path(graph, start_node, end_node):
         results[f"({u},{v})"] = impact
     return results
 
-def longest_path(graph):
-    """Ruta más larga con peso total y orden de nodos"""
-    G = nx.DiGraph()
-    for u, v, w in graph:
-        G.add_edge(u, v, weight=-w)
 
-    longest_paths = {}
-    max_distance = float('-inf')
-    best_path = []
-    start_node = None
-    end_node = None
-
-    for node in G.nodes:
-        path_lengths, paths = nx.single_source_bellman_ford(G, node)
-        for dest, weight in path_lengths.items():
-            if -weight > max_distance:
-                max_distance = -weight
-                best_path = paths[dest]
-                start_node = node
-                end_node = dest
-
-    image = generate_graph_image(graph, best_path, "Ruta Más Larga")
-
-    return {
-        "total_weight": max_distance,
-        "node_order": best_path,
-        "start_node": start_node,
-        "end_node": end_node,
-        "graph_image": image
-    }
 
 def minimum_spanning_tree(graph):
     """Árbol de Expansión Mínima con peso total"""
@@ -186,8 +176,8 @@ def solve_all_problems(graph):
 
     return {
         "shortest_path": dijkstra_algorithm(graph, list(graph[0])[0]),
-        "longest_path": longest_path(graph),
         "mst": minimum_spanning_tree(graph),
         "max_flow": max_flow_algorithm(graph, source, sink),
-        }
+        "min_cost_flow": min_cost_flow_algorithm(graph, source, sink),
+    }
 
