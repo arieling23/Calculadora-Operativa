@@ -196,7 +196,7 @@ export default function Home() {
           <div className="border-top border-secondary pt-3">
             <h5 className="fw-bold mb-1 small">Creadores:</h5>
             <p className="text-secondary small mb-0">
-              CÁCERES PÉREZ DANIELA ELIZABETH · CARRASCO AMAGUA MATEO FELIPE · JIMÉNEZ BASURTO DENNYS WLADIMIR · OLIVARES INTRIAGO MEYBILI TATIANA · SALAS CUEVA LESLY SALOMÉ
+              JEFFERSON ALBUJA · ARIEL INGUILLAY · JEFFERSON MARCALLA · STEVEN SARAGOSIN 
             </p>
           </div>
         </div>
